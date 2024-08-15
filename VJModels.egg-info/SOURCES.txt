@@ -1,0 +1,10 @@
+LICENSE.txt
+README.md
+setup.cfg
+setup.py
+VJModels/__init__.py
+VJModels.egg-info/PKG-INFO
+VJModels.egg-info/SOURCES.txt
+VJModels.egg-info/dependency_links.txt
+VJModels.egg-info/requires.txt
+VJModels.egg-info/top_level.txt

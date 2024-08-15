@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: VJModels
+Version: 0.1.0
+Summary: My person machine learning models
+Home-page: https://github.com/Vanderval31bs/VJModels
+Download-URL: https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v0.1.0-alpha.tar.gz
+Author: Vanderval Borges de Souza Junior
+Author-email: vander31bs@gmail.com
+License: MIT
+Keywords: MachineLearning,Models,Forests
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.11
+License-File: LICENSE.txt

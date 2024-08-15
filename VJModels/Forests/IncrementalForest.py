@@ -3,11 +3,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.exceptions import DataConversionWarning
 
-from collections import Counter
 from datetime import datetime
 
 import pandas as pd
-import numpy as np
 import warnings
 import math
 
