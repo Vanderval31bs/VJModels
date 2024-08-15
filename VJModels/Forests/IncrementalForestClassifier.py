@@ -44,11 +44,11 @@ class IncrementalForestClassifier:
         
         return tree, X_train, X_test_prev_B, y_train, y_test_prev_B
     
-    def score_diff_is_below_max(self, iteration):
+    def has_score_dropped_excessively(self, score, iteration):
         if iteration < 2 or len(self.scores) <= iteration - 1:
-            return True
+            return False
         else:
-            return math.fabs(max(self.scores[:-1]) - self.scores[-1]) < self.max_score_diff
+            return max(self.scores[:-1]) - score >= self.max_score_diff
 
     def fit(self, X, y):
         X_train = pd.DataFrame()
@@ -57,10 +57,13 @@ class IncrementalForestClassifier:
         X_test, y_test = X.copy(), y.copy()
         count = 0
         
-        while len(X_test) >= self.min_test_size and self.score_diff_is_below_max(count) and len(self.trees) < self.max_n_forests:
+        while len(X_test) >= self.min_test_size and len(self.trees) < self.max_n_forests:
             tree, X_train, X_test, y_train, y_test = self.fit_one_tree(X_train, X_test, y_train, y_test)
             
             score = accuracy_score(y_test, tree.predict(X_test))
+            if (self.has_score_dropped_excessively(score, count + 1)):
+                break
+
             self.scores.append(score)
             self.trees.append(tree)
             
@@ -108,7 +111,7 @@ if __name__ == "__main__":
     results = []
 
     test_size_options = [0.9]
-    n_estimators_by_step_options = [10, 20]
+    n_estimators_by_step_options = [10]
     importance_func_options = ['cubic', 'square', 'linear']
     min_test_size_options = [25]
     max_score_diff_options = [0.05]
