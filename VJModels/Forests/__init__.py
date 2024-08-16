@@ -1,5 +1,9 @@
+from .WSagging import WSaggingForestClassifier, WSaggingForestRegressor
+from .Incremental import IncrementalForestClassifier, IncrementalForestRegressor
 
-from .IncrementalForestClassifier import IncrementalForestClassifier
-from .IncrementalForestRegressor import IncrementalForestRegressor
-
-__all__ = ['IncrementalForestClassifier', 'IncrementalForestRegressor']
+__all__ = [
+    'WSaggingForestClassifier',
+    'WSaggingForestRegressor',
+    'IncrementalForestClassifier',
+    'IncrementalForestRegressor'
+]

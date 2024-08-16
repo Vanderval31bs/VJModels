@@ -8,6 +8,10 @@ VJModels.egg-info/SOURCES.txt
 VJModels.egg-info/dependency_links.txt
 VJModels.egg-info/requires.txt
 VJModels.egg-info/top_level.txt
-VJModels/Forests/IncrementalForestClassifier.py
-VJModels/Forests/IncrementalForestRegressor.py
 VJModels/Forests/__init__.py
+VJModels/Forests/Incremental/IncrementalForestClassifier.py
+VJModels/Forests/Incremental/IncrementalForestRegressor.py
+VJModels/Forests/Incremental/__init__.py
+VJModels/Forests/WSagging/WSaggingForestClassifier.py
+VJModels/Forests/WSagging/WSaggingForestRegressor.py
+VJModels/Forests/WSagging/__init__.py

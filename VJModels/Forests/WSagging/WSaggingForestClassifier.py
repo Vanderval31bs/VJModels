@@ -7,13 +7,12 @@ from datetime import datetime
 
 import pandas as pd
 import warnings
-import math
 
 # Suppress the warning
 warnings.filterwarnings("ignore", category=DataConversionWarning)
 
 
-class WaggingForestClassifier:
+class WSaggingForestClassifier:
     def __init__(self, verbose=True, test_size=0.8, n_estimators_by_step=10, n_models=10, score_exponent=2, importance_func=None, n_models_to_keep='all', random_state=42):
         self.verbose = verbose
         self.test_size = test_size
@@ -66,7 +65,6 @@ class WaggingForestClassifier:
         self.trees = sorted_trees[:self.n_models_to_keep]
 
     def get_importance(self, i):
-        n = len(self.trees)
         score = self.scores[i]
         if self.importance_func is None:
             return score ** self.score_exponent
@@ -89,7 +87,7 @@ class WaggingForestClassifier:
 
 if __name__ == "__main__":
     # Benchmark
-    df = pd.read_csv('cardio.csv', sep=";")
+    df = pd.read_csv('../cardio.csv', sep=";")
 
     X = df.drop(columns=['cardio'])
     y = df['cardio']
@@ -105,9 +103,9 @@ if __name__ == "__main__":
     for test_size in test_size_options:
         for n_estimators_by_step in n_estimators_by_step_options:
             for score_exponent in score_exponent_options:
-                # Wagging Forest
+                # WSagging Forest
                 start_time = datetime.now()
-                inc_forest = WaggingForestClassifier(
+                inc_forest = WSaggingForestClassifier(
                     verbose=False,
                     test_size=test_size,
                     n_estimators_by_step=n_estimators_by_step,
