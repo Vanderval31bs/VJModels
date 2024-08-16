@@ -1,9 +1,9 @@
 Metadata-Version: 2.1
 Name: VJModels
-Version: 0.1.2
+Version: 1.0.0
 Summary: My personal machine learning models
 Home-page: https://github.com/Vanderval31bs/VJModels
-Download-URL: https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v0.1.2-alpha.tar.gz
+Download-URL: https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v1.0.0-alpha.tar.gz
 Author: Vanderval Borges de Souza Junior
 Author-email: vander31bs@gmail.com
 License: MIT
