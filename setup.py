@@ -14,11 +14,14 @@ setup(
   author='Vanderval Borges de Souza Junior',  
   author_email='vander31bs@gmail.com',  
   url='https://github.com/Vanderval31bs/VJModels',  
-  download_url='https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v1.0.0-alpha.tar.gz',  
+  download_url='https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v2.0.0-alpha.tar.gz',  
   keywords=['MachineLearning', 'Models', 'Forests'],
   install_requires=[
       'pandas',
       'scikit-learn',
+      "statsmodels",
+      "statstests",
+      "scipy"
   ],
   classifiers=[
     'Development Status :: 3 - Alpha', 

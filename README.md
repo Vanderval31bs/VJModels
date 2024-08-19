@@ -25,6 +25,9 @@ y_test_pred = inc_forest.predict(X_test)
    - [1.1 WSagging](#wsagging)
    - [1.2 Incremental](#incremental)
 
+2. Regression
+   - [2.1 Advanced Linear Regression](#advanced-linear-regression)
+
 # Forests
 
 ## WSagging
@@ -89,6 +92,12 @@ In the next iteration, `validation_0` is further split into `train_1` and `valid
 This process continues until one of the stopping criteria is met: the validation set becomes too small, the score drops by a predefined margin, the maximum score is achieved, or the number of trees reaches the maximum limit.
 
 During the prediction phase, like in WSagging, predictions are averaged based on validation scores to obtain final predictions. The prediction algorithm is similar to WSagging but uses a different importance formula: `(n - i) * scores[i] ** exponent`, where `n` is the total number of models trained and `scores[i]` is the score of the ith model. This formula gives more weight to models trained earlier in the process.
+
+# Regression
+
+## Advanced Linear Regression
+
+
 
 
   
