@@ -92,12 +92,13 @@ class AdvancedLinearRegression:
             return True
 
     def fit(self, df: pd.DataFrame, target_label: str):
+        self.df = df
         self.categorical_columns = df.select_dtypes(include=['object', 'category']).columns
         df_dummies = pd.get_dummies(df, columns=self.categorical_columns, dtype=int, drop_first=True)
 
         self.fit_stepwise_model(df_dummies, target_label)
 
-        n = len(df)
+        n = len(df_dummies)
         if (n >= 30):
             self.shapiro_francia_test()
         else:
@@ -145,7 +146,7 @@ class AdvancedLinearRegression:
         step2 = "**STEP 2**\nFitted the first stepwise model."
 
         # Step 3: Perform normality test based on sample size
-        n = len(df)
+        n = len(self.df)
         test_type = "Shapiro-Francia test" if n >= 30 else "Shapiro-Wilk test"
         step3 = f"**STEP 3**\nAs the length of the dataframe is {n}, {test_type} was performed."
         step3 += f"\nThe p-value obtained is {self.shapiro['p-value']:.5f}."
