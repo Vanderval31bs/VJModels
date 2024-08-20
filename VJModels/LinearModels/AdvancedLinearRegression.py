@@ -10,12 +10,16 @@ from scipy.stats import shapiro, boxcox, chi2
 class AdvancedLinearRegression:
     def __init__(self, alpha=0.05, verbose=False):
         self.alpha = alpha
-        self.fitted = False
         self.verbose = verbose
+
+        self.fitted = False
+
+        self.categorical_columns = None
         self.base_model = None
         self.stepwise_model = None
         self.lmbda = None
         self.heteroscedasticity = None
+        self.breusch_pagan_p_value = None
         
     def log(self, *args):
         if self.verbose:
@@ -45,7 +49,7 @@ class AdvancedLinearRegression:
         }
         self.log("Performed Shapiro-Wilk test: ", self.shapiro)
 
-    def is_distribution_normal(self):
+    def is_resid_distribution_normal(self):
         p_value = self.shapiro['p-value']
 
         if p_value > self.alpha:
@@ -73,17 +77,12 @@ class AdvancedLinearRegression:
         anova_table = sm.stats.anova_lm(modelo_aux, typ=2)
         anova_table['sum_sq'] = anova_table['sum_sq']/2
         chisq = anova_table['sum_sq'].iloc[0]
-        p_value = chi2.pdf(chisq, 1)*2
+        self.breusch_pagan_p_value = chi2.pdf(chisq, 1)*2
         
-        self.log(f"chisq: {chisq}")        
-        self.log(f"p-value: {p_value}")
-        
-        return chisq, p_value
+        self.log(f"p-value: {self.breusch_pagan_p_value}")
     
-    def has_heteroscedasticity(self):
-        _, p_value = self.breusch_pagan_test()
-        
-        if p_value > self.alpha:
+    def has_heteroscedasticity(self):        
+        if self.breusch_pagan_p_value > self.alpha:
             self.log('Não se rejeita H0 - Ausência de Heterocedasticidade')
             return False
         else:
@@ -91,8 +90,8 @@ class AdvancedLinearRegression:
             return True
 
     def fit(self, df: pd.DataFrame, target_label: str):
-        categorical_columns = df.select_dtypes(include=['object', 'category']).columns
-        df_dummies = pd.get_dummies(df, columns=categorical_columns, dtype=int, drop_first=True)
+        self.categorical_columns = df.select_dtypes(include=['object', 'category']).columns
+        df_dummies = pd.get_dummies(df, columns=self.categorical_columns, dtype=int, drop_first=True)
 
         self.fit_stepwise_model(df_dummies, target_label)
 
@@ -102,7 +101,7 @@ class AdvancedLinearRegression:
         else:
             self.shapiro_wilk_test()
 
-        if (not self.is_distribution_normal()):
+        if (not self.is_resid_distribution_normal()):
             self.apply_box_cox(df_dummies, target_label)
 
         self.breusch_pagan_test()
@@ -119,29 +118,69 @@ class AdvancedLinearRegression:
             return self.inverse_box_cox_transform(y_pred)
         
         return self.stepwise_model.predict(X)
+    
+    def clean_column_name(self, name: str) -> str:
+        # Remove Q('...') to get just the column name
+        if name.startswith("Q('") and name.endswith("')"):
+            return name[3:-2]
+        return name
 
     def summary(self) -> dict:
         if not self.fitted:
             raise ValueError("Model is not fitted yet.")
         
-        coefficients = self.stepwise_model.params.to_dict()
-        intercept = self.stepwise_model.params.get('Intercept', 0)
+        # Step 1: Transform categorical variables
+        if len(self.categorical_columns) == 1:
+            categories = f"'{self.categorical_columns[0]}'"
+            step1 = f"**STEP 1**\nTransformed category {categories} into dummy variables."
+        else:
+            categories = "', '".join(self.categorical_columns)
+            step1 = f"**STEP 1**\nTransformed categories '{categories}' into dummy variables."
 
-        r_squared = self.stepwise_model.rsquared
-        adj_r_squared = self.stepwise_model.rsquared_adj
-        p_values = self.stepwise_model.pvalues.to_dict()
+        # Step 2: Fit stepwise model
+        step2 = "**STEP 2**\nFitted the first stepwise model."
 
-        summary = {
-            "coefficients": coefficients,
-            "intercept": intercept,
-            "r_squared": r_squared,
-            "adj_r_squared": adj_r_squared,
-            "p_values": p_values,
-            "boxcox_applied": self.lmbda is not None,
-            "heteroscedasticity": self.heteroscedasticity,
-        }
-        
+        # Step 3: Perform normality test based on sample size
+        n = len(df)
+        test_type = "Shapiro-Francia test" if n >= 30 else "Shapiro-Wilk test"
+        step3 = f"**STEP 3**\nAs the length of the dataframe is {n}, {test_type} was performed."
+        step3 += f"\nThe p-value obtained is {self.shapiro['p-value']:.5f}."
+        resid_dist_text = "" if self.is_resid_distribution_normal else "NOT "
+        step3 += f"\nThis means that the residuals are {resid_dist_text}normally distributed."
+
+        # Step 4: Box-Cox transformation (if applied)
+        step4 = ""
+        if self.lmbda is not None:
+            step4 = f"**STEP 4**\nApplied Box-Cox transformation with lambda = {self.lmbda:.5f}."
+            step4 += "\nFitted stepwise model with transformed target variable."
+
+        # Step 5: Perform Breusch-Pagan test for heteroscedasticity
+        heteroscedasticity_text = "" if self.heteroscedasticity else "NOT "
+        step5 = "Performed Breusch-Pagan test for heteroscedasticity."
+        step5 += f"\nThe p-value obtained is {self.breusch_pagan_p_value:.5f}."
+        step5 += f"\nThis means that the residuals are {heteroscedasticity_text}heteroscedastic."
+
+        # Conclusion: Format parameters and p-values in a table-like structure
+        params_table = "\n".join([f"{self.clean_column_name(key)}: {value:.5f}" for key, value in self.stepwise_model.params.items()])
+        pvalues_table = "\n".join([f"{self.clean_column_name(key)}: {value:.5e}" for key, value in self.stepwise_model.pvalues.items()])
+
+        if self.heteroscedasticity:
+            conclusion = "The model has heteroscedasticity. Probably, there are relevant features for predicting the target variable that were omitted from the model."
+        else:
+            conclusion = "The final model parameters are:\n"
+            conclusion += params_table
+            conclusion += f"\n\nThe final model R² is: {self.stepwise_model.rsquared:.5f}."
+            conclusion += f"\nThe final model adjusted R² is: {self.stepwise_model.rsquared_adj:.5f}."
+            conclusion += f"\nThe final model F statistic p-value is: {self.stepwise_model.f_pvalue:.5f}."
+            conclusion += "\n\nThe final model params p-values are:\n"
+            conclusion += pvalues_table
+
+        # Combine all steps into a summary
+        summary_steps = [step1, step2, step3, step4, f"**STEP 4**\n{step5}" if step4 == "" else f"**STEP 5**\n{step5}"]
+        summary = "\n\n".join([step for step in summary_steps if step]) + f"\n\n**CONCLUSION**:\n{conclusion}"
+
         return summary
+
     
 
 if __name__ == "__main__":
@@ -149,4 +188,5 @@ if __name__ == "__main__":
     df.drop(columns=['id'], inplace=True)
     model = AdvancedLinearRegression(verbose=False)
     model.fit(df, 'despmed')
+    print("-----------------------------------------\n\n")
     print(model.summary())

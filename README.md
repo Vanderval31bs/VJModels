@@ -25,7 +25,7 @@ y_test_pred = inc_forest.predict(X_test)
    - [1.1 WSagging](#wsagging)
    - [1.2 Incremental](#incremental)
 
-2. Regression
+2. Linear Models
    - [2.1 Advanced Linear Regression](#advanced-linear-regression)
 
 # Forests
@@ -93,11 +93,51 @@ This process continues until one of the stopping criteria is met: the validation
 
 During the prediction phase, like in WSagging, predictions are averaged based on validation scores to obtain final predictions. The prediction algorithm is similar to WSagging but uses a different importance formula: `(n - i) * scores[i] ** exponent`, where `n` is the total number of models trained and `scores[i]` is the score of the ith model. This formula gives more weight to models trained earlier in the process.
 
-# Regression
+# Linear Models
 
 ## Advanced Linear Regression
 
+This class is designed for building, fitting, and summarizing a stepwise regression model with additional diagnostic checks to ensure model validity. The main steps include transforming categorical variables, fitting the model, checking the normality of residuals, applying transformations if necessary, and testing for heteroscedasticity. The class also provides a detailed summary of the model, including parameters, R² values, and p-values.
 
+### **Key Steps and Functionality**
+
+1. **Step 1: Categorical Variable Transformation**
+    - The class begins by transforming categorical variables into dummy variables, which are suitable for regression modeling. If there is only one categorical variable, it is referred to as a "category." Otherwise, multiple variables are called "categories."
+
+2. **Step 2: Model Fitting**
+    - After transforming the variables, the class fits a stepwise regression model. This process involves removing predictors that are non-significant or cause multicollinearity issues.
+
+3. **Step 3: Residual Normality Test**
+    - The class checks the normality of residuals to validate model assumptions. The type of normality test used depends on the sample size:
+        - **Shapiro-Francia test:** Used when the sample size is 30 or more.
+        - **Shapiro-Wilk test:** Used when the sample size is less than 30.
+    - The p-value from the test is reported, and a conclusion is drawn regarding the normality of the residuals.
+
+4. **Step 4: Box-Cox Transformation (Optional)**
+    - If the model's response variable does not meet the normality assumption, a Box-Cox transformation can be applied to stabilize variance and make the data more normally distributed. The transformed target variable is then used to refit the model via the stepwise method.
+
+5. **Step 5: Heteroscedasticity Test**
+    - The Breusch-Pagan test is performed to check for heteroscedasticity (non-constant variance of residuals). The p-value from the test is reported, and a conclusion is drawn about the presence or absence of heteroscedasticity.
+
+### **Usage**
+
+To use this class effectively:
+1. Initialize the class with your dataset and specify any categorical columns.
+2. Call the fitting method to perform all steps.
+3. Use the `summary` method to get a detailed report of the model, including diagnostic tests and final results.
+4. Use the object to predict the target value on new observations.
+
+```python
+from VJModels.LinearModels import AdvancedLinearRegression
+
+model = AdvancedLinearRegression(data, 'target')
+model.fit()
+
+print(model.summary())
+
+predictions = model.predict(new_data)
+print(predictions)
+```
 
 
   
