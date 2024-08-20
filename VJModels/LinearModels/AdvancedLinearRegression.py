@@ -4,6 +4,7 @@ import pandas as pd
 import statsmodels.api as sm
 from statstests.process import stepwise
 from statstests.tests import shapiro_francia
+from statstests.datasets import bebes
 from scipy.stats import shapiro, boxcox, chi2
 
 
@@ -14,6 +15,7 @@ class AdvancedLinearRegression:
 
         self.fitted = False
 
+        self.df = None
         self.categorical_columns = None
         self.base_model = None
         self.stepwise_model = None
@@ -130,7 +132,9 @@ class AdvancedLinearRegression:
             raise ValueError("Model is not fitted yet.")
         
         # Step 1: Transform categorical variables
-        if len(self.categorical_columns) == 1:
+        if len(self.categorical_columns) == 0:
+            step1 = "**STEP 1**\nNo categorical variables to transform."
+        elif len(self.categorical_columns) == 1:
             categories = f"'{self.categorical_columns[0]}'"
             step1 = f"**STEP 1**\nTransformed category {categories} into dummy variables."
         else:
@@ -145,7 +149,7 @@ class AdvancedLinearRegression:
         test_type = "Shapiro-Francia test" if n >= 30 else "Shapiro-Wilk test"
         step3 = f"**STEP 3**\nAs the length of the dataframe is {n}, {test_type} was performed."
         step3 += f"\nThe p-value obtained is {self.shapiro['p-value']:.5f}."
-        resid_dist_text = "" if self.is_resid_distribution_normal else "NOT "
+        resid_dist_text = "" if self.is_resid_distribution_normal() else "NOT "
         step3 += f"\nThis means that the residuals are {resid_dist_text}normally distributed."
 
         # Step 4: Box-Cox transformation (if applied)
@@ -184,9 +188,24 @@ class AdvancedLinearRegression:
     
 
 if __name__ == "__main__":
-    df = pd.read_csv('planosaude.csv')
-    df.drop(columns=['id'], inplace=True)
+    df = bebes.get_data()
+    target = "comprimento"
     model = AdvancedLinearRegression(verbose=False)
-    model.fit(df, 'despmed')
+    model.fit(df, target)
+
+
     print("-----------------------------------------\n\n")
     print(model.summary())
+    print("-----------------------------------------\n\n")
+
+    predictions = model.predict(df[['idade']])
+    actual = df[target]
+    idade = df['idade']
+
+    result_table = pd.DataFrame({
+        'Idade': idade,
+        'Valor Real': actual,
+        'Previsão': predictions
+    })
+
+    print(result_table.head(5))
