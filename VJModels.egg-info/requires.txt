@@ -1,2 +1,5 @@
 pandas
 scikit-learn
+statsmodels
+statstests
+scipy

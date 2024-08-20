@@ -15,3 +15,5 @@ VJModels/Forests/Incremental/__init__.py
 VJModels/Forests/WSagging/WSaggingForestClassifier.py
 VJModels/Forests/WSagging/WSaggingForestRegressor.py
 VJModels/Forests/WSagging/__init__.py
+VJModels/LinearModels/AdvancedLinearRegression.py
+VJModels/LinearModels/__init__.py
