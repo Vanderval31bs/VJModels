@@ -88,7 +88,7 @@ class AdvancedLinearRegression:
             self.log('Não se rejeita H0 - Ausência de Heterocedasticidade')
             return False
         else:
-            self.log('Rejeita-se H0 - Existência de Heterocedasticidade')
+            self.log('Rejeita-se H0 - Presença de Heterocedasticidade')
             return True
 
     def fit(self, df: pd.DataFrame, target_label: str):
