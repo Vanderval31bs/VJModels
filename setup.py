@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
   name='VJModels',
   packages=find_packages(),  
-  version='4.0.1',
+  version='5.0.0',
   license='MIT',  
   description='My personal machine learning models',
   long_description=long_description,
@@ -14,7 +14,7 @@ setup(
   author='Vanderval Borges de Souza Junior',  
   author_email='vander31bs@gmail.com',  
   url='https://github.com/Vanderval31bs/VJModels',  
-  download_url='https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v4.0.1-alpha.tar.gz',  
+  download_url='https://github.com/Vanderval31bs/VJModels/archive/refs/tags/v5.0.0-alpha.tar.gz',  
   keywords=['MachineLearning', 'Models', 'Forests'],
   install_requires=[
       'pandas',
