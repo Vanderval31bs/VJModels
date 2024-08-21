@@ -36,7 +36,7 @@ class AdvancedLinearRegression:
         self.base_model = sm.OLS.from_formula(formula, df).fit()
         self.stepwise_model = stepwise(self.base_model, pvalue_limit=self.alpha)
 
-        self.log("Fitted stepwise and base model")
+        self.log("Fitted base model (with all predictor variables) and a model using the stepwise selection.")
 
     def shapiro_francia_test(self):
         self.shapiro = shapiro_francia(self.stepwise_model.resid)
@@ -55,43 +55,58 @@ class AdvancedLinearRegression:
         p_value = self.shapiro['p-value']
 
         if p_value > self.alpha:
-            self.log('Não se rejeita H0 - Distribuição aderente à normalidade')
+            self.log('Não se rejeita H0: Distribuição dos resíduos é aderente à normalidade')
             return True
         else:
-            self.log('Rejeita-se H0 - Distribuição não aderente à normalidade')
+            self.log('Rejeita-se H0: Distribuição dos resíduos não é aderente à normalidade')
             return False
 
     def apply_box_cox(self, df: pd.DataFrame, target_label: str):
         yast, self.lmbda = boxcox(df[target_label])  
         df[target_label] = yast
+        self.log(f"Applied Box-Cox transformation with lambda = {self.lmbda:.5f}")
+
         self.fit_stepwise_model(df, target_label)
+        self.log("Fitted stepwise model with transformed Box-Cox target variable")
 
     def inverse_box_cox_transform(self, y_pred: np.ndarray) -> np.ndarray:
-        return (y_pred * self.lmbda + 1) ** (1 / self.lmbda)
+        return (y_pred * self.lmbda + 1) ** (1 / self.lmbda)    
 
     def breusch_pagan_test(self):
-        df = pd.DataFrame({'yhat':self.stepwise_model.fittedvalues,
-                        'resid':self.stepwise_model.resid})
-    
-        df['up'] = (np.square(df.resid))/np.sum(((np.square(df.resid))/df.shape[0]))
-    
-        modelo_aux = sm.OLS.from_formula('up ~ yhat', df).fit()
-        anova_table = sm.stats.anova_lm(modelo_aux, typ=2)
-        anova_table['sum_sq'] = anova_table['sum_sq']/2
-        chisq = anova_table['sum_sq'].iloc[0]
-        self.breusch_pagan_p_value = chi2.pdf(chisq, 1)*2
-        
-        self.log(f"p-value: {self.breusch_pagan_p_value}")
+        residuals = self.stepwise_model.resid
+        fitted_values = self.stepwise_model.fittedvalues
+
+        data = pd.DataFrame({
+            'fitted': fitted_values,
+            'squared_residuals': np.square(residuals)
+        })
+
+        data['scaled_residuals'] = data['squared_residuals'] / np.mean(data['squared_residuals'])
+        auxiliary_model = sm.OLS.from_formula('scaled_residuals ~ fitted', data).fit()
+
+        anova_results = sm.stats.anova_lm(auxiliary_model, typ=2)
+        anova_results['sum_sq'] /= 2
+
+        chi2_stat = anova_results['sum_sq'].iloc[0]
+        p_value = chi2.sf(chi2_stat, 1) * 2
+
+        self.breusch_pagan_p_value = p_value
+        self.log(f"Breusch-Pagan p-value: {self.breusch_pagan_p_value}")
     
     def has_heteroscedasticity(self):        
         if self.breusch_pagan_p_value > self.alpha:
-            self.log('Não se rejeita H0 - Ausência de Heterocedasticidade')
+            self.log('Não se rejeita H0: Ausência de Heterocedasticidade')
             return False
         else:
-            self.log('Rejeita-se H0 - Presença de Heterocedasticidade')
+            self.log('Rejeita-se H0: Presença de Heterocedasticidade')
             return True
 
     def fit(self, df: pd.DataFrame, target_label: str):
+
+        if df[target_label].dtype not in ['int', 'float']:
+            raise ValueError("Target label must be a numerical column.")
+            # In the future, implement a more general model that does logistic regression here
+
         self.df = df
         self.categorical_columns = df.select_dtypes(include=['object', 'category']).columns
         df_dummies = pd.get_dummies(df, columns=self.categorical_columns, dtype=int, drop_first=True)
@@ -143,7 +158,7 @@ class AdvancedLinearRegression:
             step1 = f"**STEP 1**\nTransformed categories '{categories}' into dummy variables."
 
         # Step 2: Fit stepwise model
-        step2 = "**STEP 2**\nFitted the first stepwise model."
+        step2 = "**STEP 2**\nFitted the first model using the stepwise technique."
 
         # Step 3: Perform normality test based on sample size
         n = len(self.df)
