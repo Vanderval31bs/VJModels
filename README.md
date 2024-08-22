@@ -97,7 +97,7 @@ During the prediction phase, like in WSagging, predictions are averaged based on
 
 ## Advanced Linear Regression
 
-This class is designed for building, fitting, and summarizing a stepwise regression model with additional diagnostic checks to ensure model validity. The main steps include transforming categorical variables, fitting the model, checking the normality of residuals, applying transformations if necessary, and testing for heteroscedasticity. The class also provides a detailed summary of the model, including parameters, R² values, and p-values.
+This class is designed for building a linear regression model with additional diagnostic checks to ensure model validity. The main steps include transforming categorical variables, fitting the model, checking the normality of residuals, applying transformations if necessary, and testing for heteroscedasticity. The class also provides a detailed summary of the model, including parameters, R² values, and p-values.
 
 ### **Key Steps and Functionality**
 
@@ -113,7 +113,7 @@ This class is designed for building, fitting, and summarizing a stepwise regress
         - **Shapiro-Wilk test:** Used when the sample size is less than 30.
     - The p-value from the test is reported, and a conclusion is drawn regarding the normality of the residuals.
 
-4. **Step 4: Box-Cox Transformation (Optional)**
+4. **Step 4: Box-Cox Transformation (When needed)**
     - If the model's response variable does not meet the normality assumption, a Box-Cox transformation can be applied to stabilize variance and make the data more normally distributed. The transformed target variable is then used to refit the model via the stepwise method.
 
 5. **Step 5: Heteroscedasticity Test**
@@ -121,10 +121,10 @@ This class is designed for building, fitting, and summarizing a stepwise regress
 
 ### **Usage**
 
-To use this class effectively:
-1. Initialize the class with your dataset and specify any categorical columns.
-2. Call the fitting method to perform all steps.
-3. Use the `summary` method to get a detailed report of the model, including diagnostic tests and final results.
+To use this class:
+1. Initialize the class.
+2. Call the fitting method with your dataset and target variable to perform all steps.
+3. Use the `summary` method to get a detailed report of the model.
 4. Use the object to predict the target value on new observations.
 
 ```python
